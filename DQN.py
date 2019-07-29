@@ -18,7 +18,7 @@ episodes = 10000
 plotg=[[0 for x in range(720)] for y in range(720)]
 
 
-
+#yo
 
 
 class DQNAgent:
