@@ -14,10 +14,38 @@ import collections
 from statistics import median, mean
 from keras import backend as K
 import matplotlib.pyplot as plt
-episodes = 10000
+from pygame.locals import *
+from pygame import *
+episodes = 2000
 plotg=[[0 for x in range(720)] for y in range(720)]
+plotR=[[0 for x in range(720)] for y in range(720)]
+XDIM = 720
+YDIM = 500
+rectObs = []
+GAME_LEVEL = 1
+
+def init_obstacles(configNum):
+    global rectObs
+    rectObs = []
+    #print("config "+ str(configNum))
+    if (configNum == 0):
+        rectObs.append(pygame.Rect((XDIM / 2.0 - 50, YDIM / 2.0 - 100),(100,200)))
+    if (configNum == 1):
+        rectObs.append(pygame.Rect((40,10),(100,200)))
+        rectObs.append(pygame.Rect((500,200),(500,200)))
+    if (configNum == 2):
+        rectObs.append(pygame.Rect((40,10),(100,200)))
+    if (configNum == 3):
+        rectObs.append(pygame.Rect((40,10),(100,200)))
 
 
+def collides2(p):
+    global rectObs
+    for rect in rectObs:
+        if rect.collidepoint(p) == True:
+            # print ("collision with object: " + str(rect))
+            return True
+    return False
 
 
 
@@ -88,6 +116,8 @@ if __name__ == "__main__":
                     print("episode: {}/{}, score: {}".format(e, episodes, cum_reward))
                 break
             state = (random.randrange(720),random.randrange(500))
+            while collides2(state):
+                state = (random.randrange(720),random.randrange(500))
             #state= (600,random.randrange(500))
             env.state=state
             state=np.reshape(state,[1,2])
@@ -104,13 +134,19 @@ if __name__ == "__main__":
             state = (j, i)
             state = np.reshape(state, [1, 2])
             act_values = agent.model.predict(state)
-            action = max(act_values[0])
-            plotg[i][j] =action
+            action = np.argmax(act_values[0])
+            _, reward, _, _ = env.step(action)
+            plotg[i][j] =max(act_values[0])
+            plotR[i][j]=reward
         print (i)
 
     plt.imshow(plotg)
     plt.colorbar()
     plt.show()
+    plt.imshow(plotR)
+    plt.colorbar()
+    plt.show()
+
     for e in range(10):
         state = env.reset()
         state = np.reshape(state, [1, 2])
